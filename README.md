@@ -24,7 +24,7 @@ The seller can cancel an auction only while it has no bids. The contract has no 
 
 | Network | Chain ID | Gavel address | Explorer |
 | --- | --- | --- | --- |
-| Monad testnet | 10143 | `TODO: fill in after deploy` | https://testnet.monadvision.com/address/TODO |
+| Monad testnet | 10143 | `0xBDC3F5e9cc6af3b125A45d177E65C67154fa008c` | https://testnet.monadvision.com/address/0xBDC3F5e9cc6af3b125A45d177E65C67154fa008c |
 | Monad mainnet | 143 | not deployed yet | https://monadvision.com |
 
 USDC (Circle, 6 decimals): testnet `0x534b2f3A21130d7a60830c2Df862319e593943A3`, mainnet `0x754704Bc059F8C67012fEd69BC8A327a5aafb603` ([source](https://developers.circle.com/stablecoins/usdc-contract-addresses)).
