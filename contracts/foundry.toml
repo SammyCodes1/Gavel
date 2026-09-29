@@ -1,0 +1,31 @@
+[profile.default]
+src = "src"
+out = "out"
+libs = ["lib"]
+solc_version = "0.8.24"
+# The public `auctions` getter returns 13 fields, which is "stack too deep" for the legacy
+# code generator, so compile through the IR pipeline with the optimizer on.
+optimizer = true
+optimizer_runs = 200
+via_ir = true
+remappings = [
+    "@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/",
+    "forge-std/=lib/forge-std/src/",
+]
+
+# Monad execution environment (Foundry v1.8+), per https://docs.monad.xyz/tooling-and-infra/toolkits/foundry
+network = "monad"
+
+# Settings recommended for contract verification, per
+# https://docs.monad.xyz/guides/verify-smart-contract/foundry
+# (The docs list `metadata = true` / `metadata_hash = "none"`; Foundry 1.8 reports those keys as
+# unknown, so the supported equivalent `bytecode_hash = "none"` is used instead.)
+bytecode_hash = "none"      # disable ipfs metadata hash
+use_literal_content = true  # use source code
+
+# See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
+
+[lint]
+# Auctions are time-based by design (minimum duration 5 minutes), so a few seconds of
+# validator timestamp drift is acceptable. Silence the generic block.timestamp lint.
+exclude_lints = ["block-timestamp"]
