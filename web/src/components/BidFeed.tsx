@@ -152,42 +152,46 @@ export function BidFeed(props: {
           No bids yet. Be the first!
         </p>
       )}
-      <ul className="-mx-2 flex max-h-[26rem] flex-col gap-1 overflow-y-auto px-2" aria-live="polite" aria-label="Bid history, newest first">
+      <ul className="-mx-2 flex max-h-[26rem] flex-col gap-1 overflow-y-auto overscroll-contain px-2 py-0.5" aria-live="polite" aria-label="Bid history, newest first">
         {rows.map((r, i) => (
-          <li
-            key={r.key}
-            className={`flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm motion-safe:animate-bid-in ${
-              i === 0 ? "bg-lime/10 ring-1 ring-inset ring-lime/50" : "bg-panel-2/60"
-            }`}
-          >
-            <span
-              aria-hidden
-              className="h-8 w-8 shrink-0 rounded-full ring-2 ring-ink"
-              style={{ background: avatarGradient(r.bidder) }}
-            />
-            <div className="min-w-0 flex-1">
-              <a
-                href={explorerAddressUrl(r.bidder)}
-                target="_blank"
-                rel="noreferrer"
-                className="rounded font-mono text-sm font-semibold text-fg hover:text-grape-soft"
-              >
-                {shortAddress(r.bidder)}
-              </a>
-              <div className="text-xs text-dim">
-                {r.timestamp ? new Date(r.timestamp * 1000).toLocaleTimeString() : "…"}
-              </div>
-            </div>
-            <div className="text-right">
-              {i === 0 && (
-                <div className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-lime">
-                  {props.live === false ? "Winning bid" : "Top bid"}
-                </div>
-              )}
-              <span className={`tabular font-mono ${i === 0 ? "text-base font-extrabold text-lime" : "font-semibold text-muted"}`}>
-                {formatAmount(r.amount, payInUsdc)}
+          <li key={r.key} className="motion-safe:animate-bid-in rounded-2xl">
+            {/* The whole row is the tap target (opens the bidder on the explorer). */}
+            <a
+              href={explorerAddressUrl(r.bidder)}
+              target="_blank"
+              rel="noreferrer"
+              className={`group flex min-h-14 items-center gap-3 rounded-2xl px-3 py-2.5 text-sm transition hover:bg-panel-2 ${
+                i === 0 ? "bg-lime/10 ring-1 ring-inset ring-lime/50" : "bg-panel-2/60"
+              }`}
+            >
+              <span
+                aria-hidden
+                className="h-8 w-8 shrink-0 rounded-full ring-2 ring-ink"
+                style={{ background: avatarGradient(r.bidder) }}
+              />
+              <span className="flex shrink-0 flex-col">
+                <span className="font-mono text-sm font-semibold text-fg group-hover:text-grape-soft">
+                  {shortAddress(r.bidder)}
+                </span>
+                <span className="text-xs text-dim">
+                  {r.timestamp ? new Date(r.timestamp * 1000).toLocaleTimeString() : "…"}
+                </span>
               </span>
-            </div>
+              <span className="flex min-w-0 flex-1 flex-col items-end text-right">
+                {i === 0 && (
+                  <span className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-lime">
+                    {props.live === false ? "Winning bid" : "Top bid"}
+                  </span>
+                )}
+                <span
+                  className={`tabular max-w-full break-all font-mono ${
+                    i === 0 ? "text-base font-extrabold text-lime" : "font-semibold text-muted"
+                  }`}
+                >
+                  {formatAmount(r.amount, payInUsdc)}
+                </span>
+              </span>
+            </a>
           </li>
         ))}
       </ul>

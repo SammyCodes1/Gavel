@@ -17,6 +17,9 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: "#0a0612",
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover", // lets the gutters use env(safe-area-inset-*)
 };
 
 /** Root layout: providers, header (with withdraw banner) and page content. */
@@ -32,11 +35,11 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         </a>
         <Providers>
           <Header />
-          <main id="main" className="mx-auto w-full max-w-6xl px-4 pb-16 pt-6 sm:px-6 sm:pt-10">
+          <main id="main" className="gutter mx-auto w-full max-w-6xl pb-16 pt-6 sm:pt-10">
             {children}
           </main>
-          <footer className="border-t border-line/60 py-8 text-center text-sm text-dim">
-            Every bid is a Monad testnet transaction. Late bids add 2 minutes, so nobody gets sniped.
+          <footer className="gutter border-t border-line/60 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-8 text-center text-sm text-dim sm:pb-[max(2rem,env(safe-area-inset-bottom))]">
+            Every bid is a Monad testnet transaction. A bid in the final 2 minutes puts the clock back to 2:00, so nobody gets sniped.
           </footer>
         </Providers>
       </body>

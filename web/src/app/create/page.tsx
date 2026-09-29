@@ -82,7 +82,7 @@ export default function CreatePage() {
     // Read the new auction ID from the AuctionCreated event.
     const [created] = parseEventLogs({ abi: gavelAbi, eventName: "AuctionCreated", logs: receipt.logs });
     if (created) router.push(`/auction/${created.args.auctionId.toString()}`);
-    else setFormError("Auction created, but its ID could not be read. Check the home page.");
+    else setFormError("Auction created, but its ID could not be read. Check the auctions page.");
   }
 
   const wrongNetwork = isConnected && chainId !== appChain.id;
@@ -140,7 +140,7 @@ export default function CreatePage() {
                       : "border-line bg-panel hover:border-muted"
                   }`}
                 >
-                  <CurrencyBadge payInUsdc={usdc} size="md" />
+                  <CurrencyBadge payInUsdc={usdc} size="lg" />
                   <span className="text-sm text-muted">{usdc ? "Digital dollars" : "Monad's native coin"}</span>
                 </button>
               ))}
@@ -179,7 +179,7 @@ export default function CreatePage() {
                   key={d.seconds}
                   onClick={() => setDuration(d.seconds)}
                   aria-pressed={duration === d.seconds}
-                  className={`rounded-full border-2 px-4 py-2 text-sm font-bold transition ${
+                  className={`min-h-11 rounded-full border-2 px-4 text-sm font-bold transition ${
                     duration === d.seconds
                       ? "border-lime bg-lime text-ink"
                       : "border-line bg-panel text-muted hover:border-muted hover:text-fg"
@@ -248,14 +248,14 @@ export default function CreatePage() {
                 {title.trim() || "Your item title"}
               </h2>
               <div className="mt-3 text-xs font-semibold uppercase tracking-wider text-dim">Starting at</div>
-              <div className="font-display text-2xl font-extrabold">
+              <div className="font-display text-2xl font-extrabold [overflow-wrap:anywhere]">
                 {startPrice.trim() || "0"} <span className="text-sm text-muted">{symbol}</span>
               </div>
             </div>
           </div>
           <ul className="mt-5 space-y-2 text-sm text-muted">
             <li>⚡ Bids confirm on Monad in about a second.</li>
-            <li>⏱ A bid in the last 2 minutes adds 2 minutes.</li>
+            <li>⏱ A bid in the last 2 minutes puts the clock back to 2:00.</li>
             <li>💸 Outbid bidders collect their money back any time.</li>
           </ul>
         </div>

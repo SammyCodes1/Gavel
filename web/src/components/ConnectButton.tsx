@@ -19,14 +19,14 @@ export function ConnectButton() {
         <button
           onClick={() => connector && connect({ connector })}
           disabled={isPending || !connector}
-          className="rounded-xl bg-fg px-3 py-2 text-sm font-bold text-ink transition hover:bg-lime disabled:opacity-50"
+          className="min-h-11 whitespace-nowrap rounded-xl bg-fg px-3 text-sm font-bold text-ink transition hover:bg-lime disabled:opacity-50"
         >
           {isPending ? "Connecting…" : "Connect wallet"}
         </button>
         {error && (
           <span
             role="alert"
-            className="absolute right-0 top-full mt-2 w-64 rounded-lg border border-hot/50 bg-panel p-2 text-xs text-hot-soft shadow-xl"
+            className="absolute right-0 top-full z-40 mt-2 w-[min(16rem,calc(100vw-2rem))] rounded-lg border border-hot/50 bg-panel p-2 text-xs text-hot-soft shadow-xl"
           >
             {friendlyConnectError(error)}
           </span>
@@ -36,12 +36,12 @@ export function ConnectButton() {
   }
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex min-w-0 items-center gap-2">
       {chainId !== appChain.id && (
         <button
           onClick={() => switchChain({ chainId: appChain.id })}
           disabled={isSwitching}
-          className="rounded-xl bg-sun px-3 py-2 text-sm font-bold text-ink disabled:opacity-50"
+          className="min-h-11 whitespace-nowrap rounded-xl bg-sun px-3 text-sm font-bold text-ink disabled:opacity-50"
         >
           {isSwitching ? "Switching…" : "Switch to Monad"}
         </button>
@@ -50,9 +50,12 @@ export function ConnectButton() {
         onClick={() => disconnect()}
         title="Disconnect"
         aria-label={`Disconnect wallet ${shortAddress(address)}`}
-        className="group inline-flex items-center gap-2 rounded-xl border border-line bg-panel px-3 py-2 font-mono text-sm transition hover:border-hot"
+        className={`group min-h-11 items-center gap-2 whitespace-nowrap rounded-xl border border-line bg-panel px-3 font-mono text-xs transition hover:border-hot sm:text-sm ${
+          // On phones the "Switch to Monad" button takes this spot; disconnect is back once switched.
+          chainId !== appChain.id ? "hidden sm:inline-flex" : "inline-flex"
+        }`}
       >
-        <span aria-hidden className="h-2 w-2 rounded-full bg-lime" />
+        <span aria-hidden className="h-2 w-2 shrink-0 rounded-full bg-lime" />
         {shortAddress(address)}
         <span className="hidden font-sans text-xs text-dim group-hover:text-hot-soft sm:inline">Disconnect</span>
       </button>

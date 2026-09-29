@@ -31,7 +31,7 @@ export function WithdrawBanner() {
 
   return (
     <div className="border-t border-lime/40 bg-gradient-to-r from-lime/20 via-lime/10 to-grape/20">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-2 px-4 py-3 sm:px-6">
+      <div className="gutter mx-auto flex w-full max-w-6xl flex-col gap-2 py-3">
         {pendingMon > BigInt(0) && (
           <Row
             text={`You have ${formatAmount(pendingMon, false)} to collect`}
@@ -86,7 +86,7 @@ function Row(props: {
 }) {
   return (
     <div className="flex flex-wrap items-center gap-3 text-sm">
-      <span className="flex items-center gap-2 font-semibold">
+      <span className="flex min-w-0 items-center gap-2 font-semibold [overflow-wrap:anywhere]">
         <span aria-hidden className="text-lg">
           💰
         </span>
@@ -95,7 +95,7 @@ function Row(props: {
       <button
         onClick={props.onClick}
         disabled={props.busy || props.disabled}
-        className="rounded-xl bg-lime px-4 py-1.5 font-bold text-ink transition hover:bg-lime-deep disabled:opacity-50"
+        className="min-h-11 whitespace-nowrap rounded-xl bg-lime px-4 font-bold text-ink transition hover:bg-lime-deep disabled:opacity-50"
       >
         {props.busy ? "Collecting…" : props.label}
       </button>

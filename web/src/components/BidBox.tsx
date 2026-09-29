@@ -115,7 +115,7 @@ export function BidBox({ auctionId, auction, ended }: { auctionId: bigint; aucti
       <h2 id="bid-heading" className="font-display text-2xl font-extrabold">
         Place your bid
       </h2>
-      <label htmlFor="bid-amount" className="mt-3 block text-sm font-semibold text-muted">
+      <label htmlFor="bid-amount" className="mt-3 block text-sm font-semibold text-muted [overflow-wrap:anywhere]">
         Your bid ({symbol}) · minimum <span className="text-fg">{formatAmount(minNext, auction.payInUsdc)}</span>
       </label>
       <div className="mt-2 flex items-center rounded-2xl border-2 border-line bg-ink px-4 transition focus-within:border-lime">
@@ -140,7 +140,7 @@ export function BidBox({ auctionId, auction, ended }: { auctionId: bigint; aucti
               type="button"
               onClick={() => setInput(text)}
               aria-pressed={selected}
-              className={`rounded-full border px-3 py-1.5 text-xs font-bold transition ${
+              className={`min-h-11 max-w-full rounded-full border px-3.5 py-2 text-xs font-bold transition [overflow-wrap:anywhere] ${
                 selected ? "border-lime bg-lime/15 text-lime" : "border-line text-muted hover:border-grape hover:text-fg"
               }`}
             >
@@ -151,7 +151,7 @@ export function BidBox({ auctionId, auction, ended }: { auctionId: bigint; aucti
       </div>
 
       {auction.payInUsdc && usdcBalance !== undefined && (
-        <p className="mt-3 text-xs text-dim">Your USDC balance: {formatAmount(usdcBalance, true)}</p>
+        <p className="mt-3 text-xs text-dim [overflow-wrap:anywhere]">Your USDC balance: {formatAmount(usdcBalance, true)}</p>
       )}
 
       {auction.payInUsdc && (

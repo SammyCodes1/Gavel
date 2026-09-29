@@ -96,7 +96,7 @@ export default function AuctionPage() {
 
   const clockLabel =
     phase === "closing"
-      ? "Final seconds · any bid adds 2 min"
+      ? "Final 2 minutes · a bid resets the clock to 2:00"
       : phase === "live" || phase === "loading"
         ? "Time left"
         : phase === "ended"
@@ -125,8 +125,8 @@ export default function AuctionPage() {
   return (
     <div className="flex flex-col gap-6">
       <Link
-        href="/"
-        className="w-fit rounded-lg text-sm font-semibold text-muted transition hover:text-fg"
+        href="/auctions"
+        className="-my-2 inline-flex min-h-11 w-fit items-center rounded-lg text-sm font-semibold text-muted transition hover:text-fg"
       >
         ← All auctions
       </Link>
@@ -139,7 +139,7 @@ export default function AuctionPage() {
             <CurrencyBadge payInUsdc={auction.payInUsdc} size="md" />
             <span className="text-sm font-semibold text-dim">#{auctionId.toString()}</span>
           </div>
-          <h1 className="break-words font-display text-[clamp(2rem,7vw,3.5rem)] font-extrabold leading-[0.95] tracking-tight">
+          <h1 className="font-display [overflow-wrap:anywhere] text-[clamp(2rem,7vw,3.5rem)] font-extrabold leading-[0.95] tracking-tight">
             {auction.title}
           </h1>
           <p className="text-sm text-muted">
@@ -148,7 +148,7 @@ export default function AuctionPage() {
               href={explorerAddressUrl(auction.seller)}
               target="_blank"
               rel="noreferrer"
-              className="rounded font-mono font-semibold text-grape-soft hover:underline"
+              className="-my-3 inline-flex min-h-11 items-center rounded font-mono font-semibold text-grape-soft hover:underline"
             >
               {shortAddress(auction.seller)}
             </a>
@@ -169,7 +169,7 @@ export default function AuctionPage() {
         <div className="flex flex-col gap-4 lg:col-span-2 lg:col-start-4 lg:row-span-2 lg:row-start-1">
           <section
             aria-label="Countdown"
-            className={`relative overflow-hidden rounded-3xl border p-5 text-center transition-colors duration-500 sm:p-6 ${panelStyle[phase]}`}
+            className={`@container relative overflow-hidden rounded-3xl border p-5 text-center transition-colors duration-500 sm:p-6 ${panelStyle[phase]}`}
           >
             <div
               className={`text-xs font-extrabold uppercase tracking-[0.18em] ${
@@ -181,18 +181,18 @@ export default function AuctionPage() {
             <div
               role="timer"
               aria-live="off"
-              className={`tabular mt-1 whitespace-nowrap font-mono font-extrabold leading-none tracking-tight ${
-                statusText.length > 5 ? "text-[clamp(2.75rem,13vw,4.75rem)]" : "text-[clamp(4rem,22vw,7rem)]"
-              } ${clockColor[phase]}`}
+              className={`tabular mt-1 whitespace-nowrap font-mono font-extrabold leading-none tracking-tight ${clockColor[phase]}`}
+              // Sized from the panel's own width (container query units) so any clock text fits, even at 320px.
+              style={{ fontSize: `clamp(2.25rem, ${(85 / (0.6 * Math.max(statusText.length, 5))).toFixed(1)}cqi, 7rem)` }}
             >
               {statusText}
             </div>
             {extendedAt > 0 && (
               <div
                 role="status"
-                className="mt-3 inline-flex items-center gap-2 rounded-full bg-sun px-4 py-1.5 text-sm font-extrabold text-ink motion-safe:animate-pop"
+                className="mt-3 inline-flex max-w-full items-center gap-2 rounded-full bg-sun px-4 py-1.5 text-sm font-extrabold text-ink motion-safe:animate-pop"
               >
-                <span aria-hidden>⏱</span> Late bid! Extended by 2 minutes
+                <span aria-hidden>⏱</span> Late bid! Clock is back to 2:00
               </div>
             )}
 
@@ -223,7 +223,7 @@ export default function AuctionPage() {
                       href={explorerAddressUrl(auction.highestBidder)}
                       target="_blank"
                       rel="noreferrer"
-                      className="rounded font-mono font-semibold text-fg hover:text-grape-soft"
+                      className="-my-3 inline-flex min-h-11 items-center rounded font-mono font-semibold text-fg hover:text-grape-soft"
                     >
                       {shortAddress(auction.highestBidder)}
                     </a>
@@ -250,7 +250,7 @@ export default function AuctionPage() {
                 {hasBids ? (auction.settled ? "🏆 Sold!" : "🏁 We have a winner") : "No bids were placed."}
               </h2>
               {hasBids && (
-                <p className="mt-1 text-muted">
+                <p className="mt-1 text-muted [overflow-wrap:anywhere]">
                   Winner: <span className="font-mono font-semibold text-fg">{shortAddress(auction.highestBidder)}</span>{" "}
                   with <span className="font-bold text-fg">{formatAmount(auction.highestBid, auction.payInUsdc)}</span>
                 </p>
@@ -362,7 +362,7 @@ export default function AuctionPage() {
                   href={explorerAddressUrl(auction.highestBidder)}
                   target="_blank"
                   rel="noreferrer"
-                  className="rounded font-mono hover:text-grape-soft"
+                  className="-my-3 inline-flex min-h-11 flex-wrap items-center rounded font-mono hover:text-grape-soft"
                 >
                   {shortAddress(auction.highestBidder)}
                   {youLead && " (you)"}
@@ -380,7 +380,7 @@ export default function AuctionPage() {
           </dl>
           <p className="mt-4 rounded-2xl border border-line/60 bg-panel/60 p-4 text-sm text-muted">
             <span className="font-bold text-fg">How it works:</span> the highest bid when the clock hits zero wins. A bid
-            in the last 2 minutes adds 2 minutes, so there&apos;s always time to answer. If you&apos;re outbid, your
+            in the last 2 minutes puts the clock back to 2 minutes, so there&apos;s always time to answer. If you&apos;re outbid, your
             money is waiting for you to collect.
           </p>
         </div>
@@ -394,7 +394,7 @@ function Stat({ label, children }: { label: string; children: React.ReactNode })
   return (
     <div className="rounded-2xl border border-line bg-panel p-3.5">
       <dt className="text-xs font-bold uppercase tracking-wider text-dim">{label}</dt>
-      <dd className="mt-1 break-words font-semibold">{children}</dd>
+      <dd className="mt-1 font-semibold [overflow-wrap:anywhere]">{children}</dd>
     </div>
   );
 }
@@ -414,7 +414,7 @@ function Message({ title, text, error = false }: { title: string; text: string; 
       <h1 className="mt-3 font-display text-3xl font-extrabold">{title}</h1>
       <p className={`mt-2 ${error ? "text-hot-soft" : "text-muted"}`}>{text}</p>
       <Link
-        href="/"
+        href="/auctions"
         className="mt-6 inline-flex rounded-2xl bg-lime px-5 py-3 font-extrabold text-ink transition hover:bg-lime-deep"
       >
         Browse auctions
