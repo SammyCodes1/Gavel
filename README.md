@@ -118,8 +118,11 @@ Then put the address in `web/.env.local` (and in Vercel) as `NEXT_PUBLIC_GAVEL_A
 1. Push this repo to GitHub.
 2. In Vercel, choose **Add New → Project** and import the GitHub repo.
 3. Set **Root Directory** to `web`. Vercel detects Next.js; keep the default build command (`npm run build`).
-4. Under **Environment Variables**, add `NEXT_PUBLIC_GAVEL_ADDRESS` = your deployed Gavel address. It's the only variable the app needs, and it isn't secret.
+4. Under **Environment Variables**, add `NEXT_PUBLIC_GAVEL_ADDRESS` = your deployed Gavel address. It's the only variable the app needs to run, and it isn't secret.
 5. Deploy. If you change the variable later, redeploy: `NEXT_PUBLIC_` values are built into the site at build time.
+6. Optional: photo uploads need a Vercel Blob store connected to the project (**Storage → Create → Blob**, public access). Connecting it adds `BLOB_READ_WRITE_TOKEN` (server-only) automatically; redeploy afterwards. Without it, the create page just asks for a photo link. For local development, run `vercel env pull .env.local` in `web/`.
+
+   Uploads are checked on the server: the seller signs a free wallet message (short-lived nonce, used once), files must be JPG/PNG/WebP up to 4 MB, and each wallet and IP can upload 10 photos per hour. Nonces and rate-limit counters are stored as tiny blobs under `gavel-internal/` in the same store; they build up slowly and can be deleted at any time.
 
 ## Limitations
 

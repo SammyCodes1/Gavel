@@ -122,19 +122,43 @@ export default function LandingPage() {
   return (
     <div className="flex flex-col gap-20 sm:gap-28">
       {/* Hero */}
-      <section className="grid items-center gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:gap-12">
-        <div className="min-w-0">
+      <section className="grid items-center gap-10 overflow-x-clip lg:grid-cols-[1.1fr_0.9fr] lg:gap-12">
+        <div className="relative z-10 min-w-0">
           <p className="inline-flex items-center gap-2 rounded-full border border-hot/40 bg-hot/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] text-hot-soft">
             <span aria-hidden>🔨</span> A live auction house on Monad
           </p>
-          <h1 className="mt-5 font-display text-[clamp(3rem,13vw,6.5rem)] font-extrabold leading-[0.86] tracking-tight">
-            Raise your
+          <h1 className="mt-5 font-display text-[clamp(2.75rem,12vw,5.75rem)] font-extrabold leading-[0.86] tracking-tight">
+            <span className="whitespace-nowrap">
+              Raise
+              {/* Bid paddle: styled with classes (CSS variables don't work in SVG presentation attributes). */}
+              <svg
+                aria-hidden
+                focusable="false"
+                viewBox="0 0 60 88"
+                className="ml-[0.14em] inline-block h-[1.1em] w-auto origin-[50%_92%] align-[-0.14em] drop-shadow-[0_8px_20px_rgba(212,255,58,0.3)] motion-safe:animate-paddle"
+              >
+                {/* handle with grip bands */}
+                <rect x="25" y="50" width="10" height="36" rx="5" className="fill-lime-deep" />
+                <rect x="25" y="66" width="10" height="3" className="fill-ink" opacity="0.3" />
+                <rect x="25" y="73" width="10" height="3" className="fill-ink" opacity="0.3" />
+                {/* paddle face */}
+                <circle cx="30" cy="29" r="26" className="fill-lime stroke-ink" strokeWidth="2" />
+                <circle cx="30" cy="29" r="20.5" fill="none" strokeWidth="2.5" className="stroke-hot" opacity="0.9" />
+                <text
+                  x="30"
+                  y="37.5"
+                  textAnchor="middle"
+                  letterSpacing="-0.5"
+                  className="fill-ink font-display text-[24px] font-extrabold"
+                >
+                  07
+                </text>
+              </svg>
+            </span>{" "}
+            your
             <span className="ml-[0.2em] whitespace-nowrap">
               <span className="text-lime">paddle</span>
               <span className="text-hot">.</span>
-              <span aria-hidden className="ml-[0.1em] inline-block align-top text-[0.5em] motion-safe:animate-float">
-                🙋
-              </span>
             </span>
           </h1>
           <p className="mt-6 max-w-xl text-lg text-muted sm:text-xl">

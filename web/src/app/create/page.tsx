@@ -11,6 +11,7 @@ import { AuctionImage } from "@/components/AuctionImage";
 import { CurrencyBadge } from "@/components/CurrencyBadge";
 import { byteLength, currencyDecimals, currencySymbol } from "@/lib/format";
 import { useTx } from "@/lib/useTx";
+import { PhotoUpload } from "@/components/PhotoUpload";
 
 // Duration choices (all inside the contract's 5 minutes to 7 days range).
 const DURATIONS = [
@@ -110,19 +111,22 @@ export default function CreatePage() {
             />
           </Field>
 
-          <Field label="Photo link (optional)" hint="Must start with https:// to be shown">
-            <input
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
-              placeholder="https://…"
-              className={inputClass}
-            />
-            {urlNotShown && (
-              <span className="text-xs font-semibold text-sun">
-                This image will not be shown because it is not https://
-              </span>
-            )}
-          </Field>
+          <Group label="Photo (optional)">
+            <PhotoUpload onUploaded={setImageUrl} disabled={tx.busy} />
+            <Field label="or paste a link" hint="Must start with https:// to be shown">
+              <input
+                value={imageUrl}
+                onChange={(e) => setImageUrl(e.target.value)}
+                placeholder="https://…"
+                className={inputClass}
+              />
+              {urlNotShown && (
+                <span className="text-xs font-semibold text-sun">
+                  This image will not be shown because it is not https://
+                </span>
+              )}
+            </Field>
+          </Group>
 
           <Group label="Get paid in">
             <div className="grid grid-cols-2 gap-3">

@@ -10,6 +10,9 @@ const RPC_ENDPOINTS = [
   "wss://testnet-rpc.monad.xyz",
   "wss://rpc.monad.xyz",
 ];
+// Photo uploads: @vercel/blob's client upload() sends the file to this API path (not the store
+// host). The finished photo is shown from *.public.blob.vercel-storage.com, covered by img-src https:.
+const BLOB_UPLOAD_ENDPOINT = "https://vercel.com/api/blob/";
 
 // Content Security Policy (audit W-02). Next.js injects inline scripts without nonces, so
 // 'unsafe-inline' is needed for scripts; 'unsafe-eval' and the websocket for hot reload are dev-only.
@@ -18,7 +21,7 @@ const csp = [
   `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' https: data:", // seller images must be https (enforced in the UI too)
-  `connect-src 'self' ${RPC_ENDPOINTS.join(" ")}${isDev ? " ws://localhost:* ws://127.0.0.1:*" : ""}`,
+  `connect-src 'self' ${RPC_ENDPOINTS.join(" ")} ${BLOB_UPLOAD_ENDPOINT}${isDev ? " ws://localhost:* ws://127.0.0.1:*" : ""}`,
   "font-src 'self'",
   "frame-ancestors 'none'",
   "base-uri 'self'",
