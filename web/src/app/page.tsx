@@ -5,9 +5,12 @@ import Link from "next/link";
 import { useReadContract, useReadContracts } from "wagmi";
 import { GAVEL_ADDRESS, GAVEL_CHAIN_ID, gavelAbi } from "@/config/contract";
 import { AuctionCard } from "@/components/AuctionCard";
+import { Amount } from "@/components/Amount";
+import { LiveDot } from "@/components/StatusBadge";
 import { NotConfigured } from "@/components/NotConfigured";
 import { isLive, type Auction } from "@/lib/types";
 import { useNow } from "@/lib/useNow";
+import { formatClock } from "@/lib/format";
 
 // Auctions are loaded newest first, PAGE_SIZE at a time, so the page stays fast no matter
 // how many auctions exist (audit W-01).
@@ -71,38 +74,101 @@ export default function HomePage() {
   const failed = count.isError || auctions.isError;
 
   return (
-    <div className="flex flex-col gap-8">
-      <section>
-        <h1 className="text-3xl font-bold">Live onchain auctions</h1>
-        <p className="mt-1 text-neutral-400">Every bid is a Monad transaction. Late bids extend the clock.</p>
+    <div className="flex flex-col gap-10">
+      <section className="relative">
+        <p className="inline-flex items-center gap-2 rounded-full border border-hot/40 bg-hot/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] text-hot-soft">
+          <LiveDot /> Live auctions on Monad
+        </p>
+        <h1 className="mt-4 max-w-3xl font-display text-[clamp(2.6rem,9vw,5.25rem)] font-extrabold leading-[0.92] tracking-tight">
+          Bid live. <span className="text-lime">Win it</span> in seconds.
+        </h1>
+        <p className="mt-4 max-w-xl text-lg text-muted">
+          Every bid lands on Monad in about a second. Late bids add 2 minutes to the clock, so nobody gets sniped.
+          Pay in MON or USDC.
+        </p>
+        <div className="mt-6 flex flex-wrap gap-3">
+          <a
+            href="#live"
+            className="rounded-2xl bg-lime px-6 py-3.5 text-base font-extrabold text-ink shadow-[0_10px_30px_-10px] shadow-lime transition hover:-translate-y-0.5 hover:bg-lime-deep"
+          >
+            See what&apos;s live
+          </a>
+          <Link
+            href="/create"
+            className="rounded-2xl border border-line bg-panel px-6 py-3.5 text-base font-bold transition hover:-translate-y-0.5 hover:border-grape"
+          >
+            Sell something
+          </Link>
+        </div>
       </section>
 
-      {failed && <p className="text-red-400">Could not load auctions from Monad. Please refresh.</p>}
-      {loading && <p className="text-neutral-400">Loading auctions…</p>}
+      {!loading && !failed && <Ticker live={live} now={now} />}
+
+      {failed && (
+        <p role="alert" className="rounded-2xl border border-hot/50 bg-hot/10 p-4 font-semibold text-hot-soft">
+          Could not load auctions from Monad. Please refresh.
+        </p>
+      )}
+      {loading && (
+        <div aria-live="polite">
+          <p className="sr-only">Loading auctions…</p>
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3" aria-hidden>
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="overflow-hidden rounded-2xl border border-line bg-panel">
+                <div className="aspect-[4/3] animate-pulse bg-panel-2" />
+                <div className="space-y-3 p-4">
+                  <div className="h-5 w-2/3 animate-pulse rounded bg-panel-2" />
+                  <div className="h-7 w-1/3 animate-pulse rounded bg-panel-2" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {!loading && !failed && total === 0 && (
-        <p className="text-neutral-400">
-          No auctions yet.{" "}
-          <Link href="/create" className="text-violet-400 underline">
+        <section
+          id="live"
+          className="relative overflow-hidden rounded-3xl border border-line bg-panel p-8 text-center sm:p-12"
+        >
+          <div aria-hidden className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-grape/30 blur-3xl" />
+          <div aria-hidden className="pointer-events-none absolute -bottom-20 -left-10 h-56 w-56 rounded-full bg-hot/20 blur-3xl" />
+          <div aria-hidden className="relative text-6xl">
+            🔨
+          </div>
+          <h2 className="relative mt-4 font-display text-3xl font-extrabold sm:text-4xl">The floor is empty</h2>
+          <p className="relative mx-auto mt-2 max-w-md text-muted">
+            No auctions yet. Be the first to drop the gavel: list an item in under a minute.
+          </p>
+          <Link
+            href="/create"
+            className="relative mt-6 inline-flex rounded-2xl bg-lime px-6 py-3.5 font-extrabold text-ink shadow-[0_10px_30px_-10px] shadow-lime transition hover:-translate-y-0.5 hover:bg-lime-deep"
+          >
             Create the first one
           </Link>
-          .
-        </p>
+        </section>
       )}
 
       {total > 0 && !loading && (
         <>
-          <Section title="Live" items={live} now={now} empty="No live auctions right now." />
-          <Section title="Ended" items={ended} now={now} empty="No ended auctions yet." />
-          <div className="flex flex-col items-center gap-2">
-            <p className="text-sm text-neutral-500">
+          <Section
+            id="live"
+            title="Live now"
+            live
+            items={live}
+            now={now}
+            empty="Nothing is live right now. Start an auction and get the bidding going."
+          />
+          <Section id="ended" title="Ended" items={ended} now={now} empty="No ended auctions yet." />
+          <div className="flex flex-col items-center gap-3">
+            <p className="text-sm text-dim">
               Showing the newest {shown} of {total} auction{total === 1 ? "" : "s"}
             </p>
             {hasMore && (
               <button
                 onClick={() => setPages((p) => p + 1)}
                 disabled={auctions.isFetching}
-                className="rounded-lg border border-neutral-700 px-4 py-2 text-sm hover:border-violet-400 disabled:opacity-50"
+                className="rounded-2xl border border-line bg-panel px-6 py-3 font-bold transition hover:border-grape hover:bg-panel-2 disabled:opacity-50"
               >
                 {auctions.isFetching ? "Loading…" : `Load ${Math.min(PAGE_SIZE, total - shown)} more`}
               </button>
@@ -114,17 +180,92 @@ export default function HomePage() {
   );
 }
 
-/** A titled grid of auction cards. */
-function Section(props: { title: string; items: { id: bigint; auction: Auction }[]; now: number; empty: string }) {
+/** Scrolling "live bid ticker": live auctions and their prices, or how Gavel works when nothing is live. */
+function Ticker({ live, now }: { live: { id: bigint; auction: Auction }[]; now: number }) {
+  const items =
+    live.length > 0
+      ? live.map(({ id, auction }) => (
+          <Link
+            key={id.toString()}
+            href={`/auction/${id.toString()}`}
+            className="inline-flex items-center gap-2 whitespace-nowrap rounded-full px-2 py-1 hover:bg-white/10"
+          >
+            <span className="font-bold text-hot">●</span>
+            <span className="max-w-[14rem] truncate font-semibold">{auction.title}</span>
+            <Amount
+              amount={auction.bidCount > 0 ? auction.highestBid : auction.startPrice}
+              payInUsdc={auction.payInUsdc}
+              className="font-mono font-bold text-lime"
+              symbolClassName="text-xs text-lime/80"
+            />
+            <span className="tabular font-mono text-muted">{now ? formatClock(Number(auction.endTime) - now) : "…"}</span>
+          </Link>
+        ))
+      : [
+          "Every bid is onchain",
+          "Late bids add 2 minutes",
+          "Pay in MON or USDC",
+          "Outbid? Your money comes back to you",
+          "Winner and seller settle in one tap",
+        ].map((t) => (
+          <span key={t} className="inline-flex items-center gap-2 whitespace-nowrap px-2 py-1 font-semibold">
+            <span aria-hidden className="text-lime">
+              ✦
+            </span>
+            {t}
+          </span>
+        ));
+
   return (
-    <section>
-      <h2 className="mb-3 text-xl font-semibold">
-        {props.title} <span className="text-neutral-500">({props.items.length})</span>
+    <div
+      className="marquee relative -mx-4 overflow-hidden border-y border-line bg-panel/80 py-2 text-sm sm:mx-0 sm:rounded-2xl sm:border"
+      aria-label={live.length > 0 ? "Live auctions ticker" : "How Gavel works"}
+    >
+      <div className="marquee-track flex w-max gap-6 px-3 motion-safe:animate-marquee">
+        <div className="flex gap-6">
+          {items}
+          {/* Short lists are repeated so the loop always fills a wide screen. */}
+          {items.length < 6 && (
+            <div className="marquee-dup flex gap-6" aria-hidden inert>
+              {items}
+            </div>
+          )}
+        </div>
+        <div className="marquee-dup flex gap-6" aria-hidden inert>
+          {items}
+          {items.length < 6 && <div className="flex gap-6">{items}</div>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** A titled grid of auction cards. */
+function Section(props: {
+  id: string;
+  title: string;
+  live?: boolean;
+  items: { id: bigint; auction: Auction }[];
+  now: number;
+  empty: string;
+}) {
+  return (
+    <section id={props.id} className="scroll-mt-24">
+      <h2 className="mb-4 flex items-center gap-3 font-display text-3xl font-extrabold tracking-tight">
+        {props.live && <LiveDot />}
+        {props.title}
+        <span
+          className={`rounded-full px-2.5 py-0.5 font-sans text-sm font-bold ${
+            props.live ? "bg-hot text-white" : "bg-panel-2 text-muted"
+          }`}
+        >
+          {props.items.length}
+        </span>
       </h2>
       {props.items.length === 0 ? (
-        <p className="text-sm text-neutral-500">{props.empty}</p>
+        <p className="rounded-2xl border border-dashed border-line p-6 text-center text-muted">{props.empty}</p>
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {props.items.map(({ id, auction }) => (
             <AuctionCard key={id.toString()} id={id} auction={auction} now={props.now} />
           ))}

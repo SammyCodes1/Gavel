@@ -42,3 +42,19 @@ export function safeImageUrl(url: string): string | undefined {
 export function byteLength(text: string): number {
   return new TextEncoder().encode(text).length;
 }
+
+/**
+ * Scoreboard-style clock for countdowns: "04:07" under an hour, "3:04:07" under a day,
+ * and "2d 03:04" beyond that.
+ */
+export function formatClock(totalSeconds: number): string {
+  const s = Math.max(0, Math.floor(totalSeconds));
+  const d = Math.floor(s / 86400);
+  const h = Math.floor((s % 86400) / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = s % 60;
+  const pad = (n: number) => n.toString().padStart(2, "0");
+  if (d > 0) return `${d}d ${pad(h)}:${pad(m)}`;
+  if (h > 0) return `${h}:${pad(m)}:${pad(sec)}`;
+  return `${pad(m)}:${pad(sec)}`;
+}

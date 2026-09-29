@@ -102,48 +102,119 @@ export function BidBox({ auctionId, auction, ended }: { auctionId: bigint; aucti
   const label = (status: string, idle: string) =>
     status === "wallet" ? "Waiting for wallet…" : status === "confirming" ? "Confirming…" : idle;
 
+  // Quick picks only fill in the input; the same checks as typing apply.
+  const quickPicks = [
+    { label: "Minimum", value: minNext },
+    { label: "+1 step", value: minNext + auction.minIncrement },
+    { label: "+5 steps", value: minNext + auction.minIncrement * BigInt(5) },
+  ];
+  const usdcStep = needsApproval ? 1 : 2;
+
   return (
-    <div className="rounded-xl border border-neutral-800 bg-neutral-900 p-4">
-      <h2 className="mb-3 text-lg font-semibold">Place a bid</h2>
-      <label className="flex flex-col gap-1 text-sm text-neutral-300">
-        Your bid ({symbol}) · minimum {formatAmount(minNext, auction.payInUsdc)}
+    <section className="rounded-3xl border border-line bg-panel p-5" aria-labelledby="bid-heading">
+      <h2 id="bid-heading" className="font-display text-2xl font-extrabold">
+        Place your bid
+      </h2>
+      <label htmlFor="bid-amount" className="mt-3 block text-sm font-semibold text-muted">
+        Your bid ({symbol}) · minimum <span className="text-fg">{formatAmount(minNext, auction.payInUsdc)}</span>
+      </label>
+      <div className="mt-2 flex items-center rounded-2xl border-2 border-line bg-ink px-4 transition focus-within:border-lime">
         <input
+          id="bid-amount"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           inputMode="decimal"
-          className="rounded-lg border border-neutral-700 bg-neutral-950 px-3 py-2 text-lg text-neutral-100 outline-none focus:border-violet-500"
+          autoComplete="off"
+          className="tabular min-w-0 flex-1 bg-transparent py-3 font-display text-3xl font-extrabold text-fg outline-none focus-visible:outline-none"
         />
-      </label>
+        <span className="shrink-0 pl-2 text-lg font-extrabold text-muted">{symbol}</span>
+      </div>
+
+      <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label="Quick bid amounts">
+        {quickPicks.map((q) => {
+          const text = formatUnits(q.value, decimals);
+          const selected = input.trim() === text;
+          return (
+            <button
+              key={q.label}
+              type="button"
+              onClick={() => setInput(text)}
+              aria-pressed={selected}
+              className={`rounded-full border px-3 py-1.5 text-xs font-bold transition ${
+                selected ? "border-lime bg-lime/15 text-lime" : "border-line text-muted hover:border-grape hover:text-fg"
+              }`}
+            >
+              {q.label} · {text}
+            </button>
+          );
+        })}
+      </div>
 
       {auction.payInUsdc && usdcBalance !== undefined && (
-        <p className="mt-2 text-xs text-neutral-500">Your USDC balance: {formatAmount(usdcBalance, true)}</p>
+        <p className="mt-3 text-xs text-dim">Your USDC balance: {formatAmount(usdcBalance, true)}</p>
       )}
 
-      <div className="mt-3 flex flex-col gap-2">
+      {auction.payInUsdc && (
+        <ol className="mt-4 grid grid-cols-2 gap-2 text-xs font-bold" aria-label="USDC bids take two steps">
+          {["Approve USDC", "Place bid"].map((step, i) => (
+            <li
+              key={step}
+              aria-current={usdcStep === i + 1 ? "step" : undefined}
+              className={`flex items-center gap-2 rounded-xl px-3 py-2 ${
+                usdcStep === i + 1 ? "bg-usdc/20 text-usdc-soft ring-1 ring-usdc/60" : "bg-panel-2 text-dim"
+              }`}
+            >
+              <span
+                className={`grid h-5 w-5 place-items-center rounded-full text-[10px] ${
+                  usdcStep === i + 1 ? "bg-usdc text-white" : usdcStep > i + 1 ? "bg-lime text-ink" : "bg-line text-muted"
+                }`}
+              >
+                {usdcStep > i + 1 ? "✓" : i + 1}
+              </span>
+              Step {i + 1} of 2: {step}
+            </li>
+          ))}
+        </ol>
+      )}
+
+      <div className="mt-4 flex flex-col gap-2">
         {auction.payInUsdc && needsApproval ? (
-          <>
-            <p className="text-sm text-neutral-400">Step 1 of 2: Approve</p>
-            <button onClick={approve} disabled={disabled} className={buttonClass}>
-              {label(approveTx.status, "Approve USDC")}
-            </button>
-          </>
+          <button onClick={approve} disabled={disabled} className={buttonClass}>
+            {label(approveTx.status, "Approve USDC")}
+          </button>
         ) : (
-          <>
-            {auction.payInUsdc && <p className="text-sm text-neutral-400">Step 2 of 2: Bid</p>}
-            <button onClick={placeBid} disabled={disabled} className={buttonClass}>
-              {label(bidTx.status, "Place bid")}
-            </button>
-          </>
+          <button onClick={placeBid} disabled={disabled} className={buttonClass}>
+            {label(bidTx.status, "Place bid")}
+          </button>
         )}
       </div>
 
-      {blocker && <p className="mt-2 text-sm text-amber-400">{blocker}</p>}
-      {approveTx.error && <p className="mt-2 text-sm text-red-400">{approveTx.error}</p>}
-      {bidTx.error && <p className="mt-2 text-sm text-red-400">{bidTx.error}</p>}
-      {bidTx.status === "success" && <p className="mt-2 text-sm text-green-400">Bid placed!</p>}
-    </div>
+      <div aria-live="polite">
+        {blocker && (
+          <p className="mt-3 flex items-start gap-2 text-sm font-semibold text-sun">
+            <span aria-hidden>●</span>
+            {blocker}
+          </p>
+        )}
+        {approveTx.error && (
+          <p role="alert" className="mt-2 text-sm text-hot-soft">
+            {approveTx.error}
+          </p>
+        )}
+        {bidTx.error && (
+          <p role="alert" className="mt-2 text-sm text-hot-soft">
+            {bidTx.error}
+          </p>
+        )}
+        {bidTx.status === "success" && (
+          <p className="mt-3 rounded-xl bg-lime px-3 py-2 text-sm font-extrabold text-ink motion-safe:animate-pop">
+            🎉 Bid placed! Watch the feed below.
+          </p>
+        )}
+      </div>
+    </section>
   );
 }
 
 const buttonClass =
-  "rounded-lg bg-violet-500 px-4 py-3 font-semibold text-white hover:bg-violet-400 disabled:cursor-not-allowed disabled:opacity-50";
+  "w-full rounded-2xl bg-lime px-5 py-4 font-display text-xl font-extrabold text-ink shadow-[0_12px_32px_-12px] shadow-lime transition hover:-translate-y-0.5 hover:bg-lime-deep active:translate-y-0 disabled:translate-y-0 disabled:cursor-not-allowed disabled:bg-panel-2 disabled:text-dim disabled:shadow-none";

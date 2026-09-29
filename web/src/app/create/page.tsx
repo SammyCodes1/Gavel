@@ -7,6 +7,8 @@ import { parseEventLogs, parseUnits } from "viem";
 import { appChain } from "@/config/chains";
 import { GAVEL_ADDRESS, GAVEL_CHAIN_ID, MAX_IMAGE_URL_LENGTH, MAX_TITLE_LENGTH, gavelAbi } from "@/config/contract";
 import { NotConfigured } from "@/components/NotConfigured";
+import { AuctionImage } from "@/components/AuctionImage";
+import { CurrencyBadge } from "@/components/CurrencyBadge";
 import { byteLength, currencyDecimals, currencySymbol } from "@/lib/format";
 import { useTx } from "@/lib/useTx";
 
@@ -87,107 +89,203 @@ export default function CreatePage() {
   const urlNotShown = imageUrl.trim() !== "" && !imageUrl.trim().startsWith("https://");
 
   return (
-    <div className="mx-auto max-w-xl">
-      <h1 className="mb-6 text-3xl font-bold">Create auction</h1>
-      <form onSubmit={onSubmit} className="flex flex-col gap-4">
-        <Field label="Title" hint={`${byteLength(title.trim())}/${MAX_TITLE_LENGTH} bytes`}>
-          <input value={title} onChange={(e) => setTitle(e.target.value)} className={inputClass} required />
-        </Field>
+    <div className="grid grid-cols-1 gap-8 lg:grid-cols-5">
+      <div className="lg:col-span-3">
+        <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-lime">Sell on Gavel</p>
+        <h1 className="mt-2 font-display text-[clamp(2.25rem,8vw,3.75rem)] font-extrabold leading-[0.95] tracking-tight">
+          Create auction
+        </h1>
+        <p className="mt-3 max-w-lg text-muted">
+          Set a starting price, pick how long it runs, and let the bids roll in. Every bid is a Monad transaction.
+        </p>
 
-        <Field label="Image URL (optional)" hint="Must start with https:// to be shown">
-          <input
-            value={imageUrl}
-            onChange={(e) => setImageUrl(e.target.value)}
-            placeholder="https://…"
-            className={inputClass}
-          />
-          {urlNotShown && (
-            <span className="text-xs text-amber-400">This image will not be shown because it is not https://</span>
-          )}
-        </Field>
+        <form onSubmit={onSubmit} className="mt-8 flex flex-col gap-6">
+          <Field label="What are you selling?" hint={`${byteLength(title.trim())}/${MAX_TITLE_LENGTH} bytes`}>
+            <input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="e.g. Signed vinyl, first pressing"
+              className={inputClass}
+              required
+            />
+          </Field>
 
-        <Field label="Currency">
-          <div className="flex gap-2">
-            {[false, true].map((usdc) => (
-              <button
-                type="button"
-                key={String(usdc)}
-                onClick={() => setPayInUsdc(usdc)}
-                className={`flex-1 rounded-lg border px-3 py-2 font-semibold ${
-                  payInUsdc === usdc ? "border-violet-500 bg-violet-500/20" : "border-neutral-700"
-                }`}
-              >
-                {currencySymbol(usdc)}
-              </button>
-            ))}
+          <Field label="Photo link (optional)" hint="Must start with https:// to be shown">
+            <input
+              value={imageUrl}
+              onChange={(e) => setImageUrl(e.target.value)}
+              placeholder="https://…"
+              className={inputClass}
+            />
+            {urlNotShown && (
+              <span className="text-xs font-semibold text-sun">
+                This image will not be shown because it is not https://
+              </span>
+            )}
+          </Field>
+
+          <Group label="Get paid in">
+            <div className="grid grid-cols-2 gap-3">
+              {[false, true].map((usdc) => (
+                <button
+                  type="button"
+                  key={String(usdc)}
+                  onClick={() => setPayInUsdc(usdc)}
+                  aria-pressed={payInUsdc === usdc}
+                  className={`flex flex-col items-start gap-1 rounded-2xl border-2 p-4 text-left transition ${
+                    payInUsdc === usdc
+                      ? usdc
+                        ? "border-usdc bg-usdc/15"
+                        : "border-grape bg-grape/15"
+                      : "border-line bg-panel hover:border-muted"
+                  }`}
+                >
+                  <CurrencyBadge payInUsdc={usdc} size="md" />
+                  <span className="text-sm text-muted">{usdc ? "Digital dollars" : "Monad's native coin"}</span>
+                </button>
+              ))}
+            </div>
+          </Group>
+
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+            <Field label={`Start price (${symbol})`}>
+              <input
+                value={startPrice}
+                onChange={(e) => setStartPrice(e.target.value)}
+                inputMode="decimal"
+                placeholder={payInUsdc ? "10" : "0.5"}
+                className={inputClass}
+                required
+              />
+            </Field>
+
+            <Field label={`Minimum increment (${symbol})`}>
+              <input
+                value={minIncrement}
+                onChange={(e) => setMinIncrement(e.target.value)}
+                inputMode="decimal"
+                placeholder={payInUsdc ? "1" : "0.1"}
+                className={inputClass}
+                required
+              />
+            </Field>
           </div>
-        </Field>
 
-        <Field label={`Start price (${symbol})`}>
-          <input
-            value={startPrice}
-            onChange={(e) => setStartPrice(e.target.value)}
-            inputMode="decimal"
-            placeholder={payInUsdc ? "10" : "0.5"}
-            className={inputClass}
-            required
-          />
-        </Field>
+          <Group label="How long should it run?">
+            <div className="flex flex-wrap gap-2">
+              {DURATIONS.map((d) => (
+                <button
+                  type="button"
+                  key={d.seconds}
+                  onClick={() => setDuration(d.seconds)}
+                  aria-pressed={duration === d.seconds}
+                  className={`rounded-full border-2 px-4 py-2 text-sm font-bold transition ${
+                    duration === d.seconds
+                      ? "border-lime bg-lime text-ink"
+                      : "border-line bg-panel text-muted hover:border-muted hover:text-fg"
+                  }`}
+                >
+                  {d.label}
+                </button>
+              ))}
+            </div>
+          </Group>
 
-        <Field label={`Minimum increment (${symbol})`}>
-          <input
-            value={minIncrement}
-            onChange={(e) => setMinIncrement(e.target.value)}
-            inputMode="decimal"
-            placeholder={payInUsdc ? "1" : "0.1"}
-            className={inputClass}
-            required
-          />
-        </Field>
+          <div aria-live="polite" className="flex flex-col gap-2 empty:hidden">
+            {formError && (
+              <p role="alert" className="rounded-xl border border-hot/50 bg-hot/10 px-4 py-3 font-semibold text-hot-soft">
+                {formError}
+              </p>
+            )}
+            {tx.error && (
+              <p role="alert" className="rounded-xl border border-hot/50 bg-hot/10 px-4 py-3 font-semibold text-hot-soft">
+                {tx.error}
+              </p>
+            )}
+            {!isConnected && <p className="text-muted">Connect your wallet to create an auction.</p>}
+            {wrongNetwork && <p className="font-semibold text-sun">Switch your wallet to Monad to continue.</p>}
+          </div>
 
-        <Field label="Duration">
-          <select value={duration} onChange={(e) => setDuration(Number(e.target.value))} className={inputClass}>
-            {DURATIONS.map((d) => (
-              <option key={d.seconds} value={d.seconds}>
-                {d.label}
-              </option>
-            ))}
-          </select>
-        </Field>
+          <button
+            type="submit"
+            disabled={!isConnected || wrongNetwork || tx.busy}
+            className="rounded-2xl bg-lime px-5 py-4 font-display text-xl font-extrabold text-ink shadow-[0_12px_32px_-12px] shadow-lime transition hover:-translate-y-0.5 hover:bg-lime-deep disabled:translate-y-0 disabled:cursor-not-allowed disabled:bg-panel-2 disabled:text-dim disabled:shadow-none"
+          >
+            {tx.status === "wallet"
+              ? "Waiting for wallet…"
+              : tx.status === "confirming"
+                ? "Confirming…"
+                : "Create auction"}
+          </button>
+        </form>
+      </div>
 
-        {formError && <p className="text-red-400">{formError}</p>}
-        {tx.error && <p className="text-red-400">{tx.error}</p>}
-        {!isConnected && <p className="text-neutral-400">Connect your wallet to create an auction.</p>}
-        {wrongNetwork && <p className="text-amber-400">Switch your wallet to Monad to continue.</p>}
-
-        <button
-          type="submit"
-          disabled={!isConnected || wrongNetwork || tx.busy}
-          className="rounded-lg bg-violet-500 px-4 py-3 font-semibold text-white hover:bg-violet-400 disabled:opacity-50"
-        >
-          {tx.status === "wallet"
-            ? "Waiting for wallet…"
-            : tx.status === "confirming"
-              ? "Confirming…"
-              : "Create auction"}
-        </button>
-      </form>
+      {/* Live preview of the card buyers will see (display only). */}
+      <aside className="lg:col-span-2" aria-label="Preview">
+        <div className="lg:sticky lg:top-24">
+          <p className="mb-3 text-xs font-extrabold uppercase tracking-[0.18em] text-dim">Preview</p>
+          <div className="overflow-hidden rounded-2xl border border-line bg-panel">
+            <div className="relative aspect-[4/3] bg-panel-2">
+              <AuctionImage
+                url={imageUrl.trim()}
+                alt={title.trim() || "Your item"}
+                fallback
+                className="h-full w-full object-cover"
+                fallbackClassName="h-full w-full"
+              />
+              <div className="absolute inset-x-0 top-0 flex items-start justify-between p-3">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-hot px-2.5 py-1 text-[11px] font-extrabold uppercase tracking-[0.12em] text-white">
+                  Live
+                </span>
+                <CurrencyBadge payInUsdc={payInUsdc} />
+              </div>
+              <div className="tabular absolute bottom-3 right-3 rounded-xl bg-ink/80 px-3 py-1.5 font-mono text-lg font-bold">
+                {DURATIONS.find((d) => d.seconds === duration)?.label}
+              </div>
+            </div>
+            <div className="p-4">
+              <h2 className="line-clamp-2 break-words font-display text-lg font-bold leading-tight">
+                {title.trim() || "Your item title"}
+              </h2>
+              <div className="mt-3 text-xs font-semibold uppercase tracking-wider text-dim">Starting at</div>
+              <div className="font-display text-2xl font-extrabold">
+                {startPrice.trim() || "0"} <span className="text-sm text-muted">{symbol}</span>
+              </div>
+            </div>
+          </div>
+          <ul className="mt-5 space-y-2 text-sm text-muted">
+            <li>⚡ Bids confirm on Monad in about a second.</li>
+            <li>⏱ A bid in the last 2 minutes adds 2 minutes.</li>
+            <li>💸 Outbid bidders collect their money back any time.</li>
+          </ul>
+        </div>
+      </aside>
     </div>
   );
 }
 
 const inputClass =
-  "w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2 text-neutral-100 outline-none focus:border-violet-500";
+  "w-full rounded-2xl border-2 border-line bg-panel px-4 py-3 text-base text-fg placeholder:text-dim outline-none transition focus:border-lime focus-visible:outline-none";
 
 /** Label + input wrapper. */
 function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
   return (
-    <label className="flex flex-col gap-1">
-      <span className="flex justify-between text-sm text-neutral-300">
+    <label className="flex flex-col gap-2">
+      <span className="flex flex-wrap items-baseline justify-between gap-x-3 text-sm font-bold text-fg">
         {label}
-        {hint && <span className="text-neutral-500">{hint}</span>}
+        {hint && <span className="text-xs font-medium text-dim">{hint}</span>}
       </span>
       {children}
     </label>
+  );
+}
+
+/** Label for a group of choice buttons. */
+function Group({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <fieldset className="flex flex-col gap-2">
+      <legend className="mb-2 text-sm font-bold text-fg">{label}</legend>
+      {children}
+    </fieldset>
   );
 }

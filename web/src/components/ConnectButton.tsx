@@ -15,26 +15,33 @@ export function ConnectButton() {
   if (!isConnected || !address) {
     const connector = connectors[0];
     return (
-      <div className="flex flex-col items-end">
+      <div className="relative flex flex-col items-end">
         <button
           onClick={() => connector && connect({ connector })}
           disabled={isPending || !connector}
-          className="rounded-lg bg-violet-500 px-3 py-2 text-sm font-semibold text-white hover:bg-violet-400 disabled:opacity-50"
+          className="rounded-xl bg-fg px-3 py-2 text-sm font-bold text-ink transition hover:bg-lime disabled:opacity-50"
         >
           {isPending ? "Connecting…" : "Connect wallet"}
         </button>
-        {error && <span className="mt-1 text-xs text-red-400">{friendlyConnectError(error)}</span>}
+        {error && (
+          <span
+            role="alert"
+            className="absolute right-0 top-full mt-2 w-64 rounded-lg border border-hot/50 bg-panel p-2 text-xs text-hot-soft shadow-xl"
+          >
+            {friendlyConnectError(error)}
+          </span>
+        )}
       </div>
     );
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <div className="flex items-center gap-2">
       {chainId !== appChain.id && (
         <button
           onClick={() => switchChain({ chainId: appChain.id })}
           disabled={isSwitching}
-          className="rounded-lg bg-amber-500 px-3 py-2 text-sm font-semibold text-black disabled:opacity-50"
+          className="rounded-xl bg-sun px-3 py-2 text-sm font-bold text-ink disabled:opacity-50"
         >
           {isSwitching ? "Switching…" : "Switch to Monad"}
         </button>
@@ -42,9 +49,12 @@ export function ConnectButton() {
       <button
         onClick={() => disconnect()}
         title="Disconnect"
-        className="rounded-lg border border-neutral-700 px-3 py-2 font-mono text-sm hover:border-violet-400"
+        aria-label={`Disconnect wallet ${shortAddress(address)}`}
+        className="group inline-flex items-center gap-2 rounded-xl border border-line bg-panel px-3 py-2 font-mono text-sm transition hover:border-hot"
       >
-        {shortAddress(address)} · Disconnect
+        <span aria-hidden className="h-2 w-2 rounded-full bg-lime" />
+        {shortAddress(address)}
+        <span className="hidden font-sans text-xs text-dim group-hover:text-hot-soft sm:inline">Disconnect</span>
       </button>
     </div>
   );

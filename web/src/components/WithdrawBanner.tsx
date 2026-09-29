@@ -30,8 +30,8 @@ export function WithdrawBanner() {
   const wrongNetwork = chainId !== appChain.id;
 
   return (
-    <div className="border-t border-violet-900 bg-violet-950/60">
-      <div className="mx-auto flex w-full max-w-5xl flex-col gap-2 px-4 py-3">
+    <div className="border-t border-lime/40 bg-gradient-to-r from-lime/20 via-lime/10 to-grape/20">
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-2 px-4 py-3 sm:px-6">
         {pendingMon > BigInt(0) && (
           <Row
             text={`You have ${formatAmount(pendingMon, false)} to collect`}
@@ -86,15 +86,24 @@ function Row(props: {
 }) {
   return (
     <div className="flex flex-wrap items-center gap-3 text-sm">
-      <span>{props.text}</span>
+      <span className="flex items-center gap-2 font-semibold">
+        <span aria-hidden className="text-lg">
+          💰
+        </span>
+        {props.text}
+      </span>
       <button
         onClick={props.onClick}
         disabled={props.busy || props.disabled}
-        className="rounded-lg bg-violet-500 px-3 py-1.5 font-semibold text-white hover:bg-violet-400 disabled:opacity-50"
+        className="rounded-xl bg-lime px-4 py-1.5 font-bold text-ink transition hover:bg-lime-deep disabled:opacity-50"
       >
         {props.busy ? "Collecting…" : props.label}
       </button>
-      {props.error && <span className="text-red-400">{props.error}</span>}
+      {props.error && (
+        <span role="alert" className="text-hot-soft">
+          {props.error}
+        </span>
+      )}
     </div>
   );
 }
